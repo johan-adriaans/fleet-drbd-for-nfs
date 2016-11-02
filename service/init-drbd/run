@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+
+hostname=$(hostname)
+
+# Configure drbd device
+if [ ! -z "$DRBD_DEVICE" ]; then
+  sed -i "s#/dev/sdxxx#$DRBD_DEVICE#g" /etc/drbd.d/r0.res
+else
+  echo "Make sure you set the DRBD_DEVICE environment variable, and set it to the correct block device. This device WILL be formatted when starting this container."
+  exit
+fi
+if [ ! -z "$DRBD_HOSTNAME_1" ]; then
+  sed -i "s#%DRBD_HOSTNAME_1%#$DRBD_HOSTNAME_1#g" /etc/drbd.d/r0.res
+fi
+if [ ! -z "$DRBD_HOSTNAME_2" ]; then
+  sed -i "s#%DRBD_HOSTNAME_2%#$DRBD_HOSTNAME_2#g" /etc/drbd.d/r0.res
+fi
+if [ ! -z "$DRBD_ADDRESS_1" ]; then
+  sed -i "s#%DRBD_ADDRESS_1%#$DRBD_ADDRESS_1#g" /etc/drbd.d/r0.res
+fi
+if [ ! -z "$DRBD_ADDRESS_2" ]; then
+  sed -i "s#%DRBD_ADDRESS_2%#$DRBD_ADDRESS_2#g" /etc/drbd.d/r0.res
+fi
+if [ ! -z "$DRBD_SECRET" ]; then
+  sed -i "s#%DRBD_SECRET%#$DRBD_SECRET#g" /etc/drbd.d/r0.res
+fi
+
+# Configure ssmtp
+sed -i "s#%HOSTNAME%#$hostname#g" /etc/ssmtp/ssmtp.conf
+if [ ! -z "$EMAIL_ROOT_ACCOUNT" ]; then
+  sed -i "s#%EMAIL_ROOT_ACCOUNT%#$EMAIL_ROOT_ACCOUNT#g" /etc/ssmtp/ssmtp.conf
+  sed -i "s#%EMAIL_ROOT_ACCOUNT%#$EMAIL_ROOT_ACCOUNT#g" /etc/aliases
+fi
+if [ ! -z "$SMTP_REWRITE_DOMAIN" ]; then
+  sed -i "s#%SMTP_REWRITE_DOMAIN%#$SMTP_REWRITE_DOMAIN#g" /etc/ssmtp/ssmtp.conf
+fi
+if [ ! -z "$SMTP_SERVER" ]; then
+  sed -i "s#%SMTP_SERVER%#$SMTP_SERVER#g" /etc/ssmtp/ssmtp.conf
+fi
+if [ ! -z "$SMTP_USER" ]; then
+  sed -i "s#%SMTP_USER%#$SMTP_USER#g" /etc/ssmtp/ssmtp.conf
+fi
+if [ ! -z "$SMTP_PASS" ]; then
+  sed -i "s#%SMTP_PASS%#$SMTP_PASS#g" /etc/ssmtp/ssmtp.conf
+fi
+
+# Init disks if no drbd meta-data is found
+if [ "$(drbdsetup /dev/drbd1 dstate &>/dev/null || echo $?)" == "10" ]; then
+  if [ "$hostname" == "cluster-data-1" ]; then
+    drbdadm create-md all
+    drbdadm up all
+    drbdadm primary --force all
+    mkfs.ext4 /dev/drbd1
+  else
+    drbdadm create-md all
+  fi
+fi
+
+# Bring up the disk
+drbdadm adjust all
+drbdadm up all
+
+# Always start as secondary. Primary node is set by nfs-ip.service and fleet
+drbdadm secondary all
+
+# Give pid to drbd event listener so the events are logged by docker
+exec drbdsetup events2 all
