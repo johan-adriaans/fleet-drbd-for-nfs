@@ -7,7 +7,7 @@ CONTAINER_NAME = johanadriaans/drbd
 
 # name of instance and other options you want to pass to docker run for testing
 INSTANCE_NAME = drbd
-RUN_OPTS = --net host -e DRBD_DEVICE=/dev/sdxxx -e EMAIL_ROOT_ACCOUNT=info@dummy-domain.xyz -e SMTP_SERVER=server.xyz:587 -e SMTP_USER=smtp-user -e SMTP_PASS=smtpPassw0rd -e SMTP_REWRITE_DOMAIN=outgoung-mail-domain.xyz -e DRBD_HOSTNAME_1=cluster-data-1 -e DRBD_HOSTNAME_2=cluster-data-2 -e DRBD_ADDRESS_1=10.0.0.3:7789 -e DRBD_ADDRESS_2=10.0.0.4:7789 -e DRBD_SECRET=drbdSharedSecret
+RUN_OPTS = --net host
 
 #-----------------------------------------------------------------------------
 # default target
