@@ -47,10 +47,7 @@ fi
 # Init disks if no drbd meta-data is found
 if [ "$(drbdsetup /dev/drbd1 dstate &>/dev/null || echo $?)" == "10" ]; then
   if [ "$hostname" == "cluster-data-1" ]; then
-    drbdadm create-md all
-    drbdadm up all
-    drbdadm primary --force all
-    mkfs.ext4 /dev/drbd1
+    drbdadm create-md all && drbdadm up all && drbdadm primary --force all && mkfs.ext4 /dev/drbd1
   else
     drbdadm create-md all
   fi
