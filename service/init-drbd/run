@@ -4,7 +4,7 @@ hostname=$(hostname)
 
 # Configure drbd device
 if [ ! -z "$DRBD_DEVICE" ]; then
-  sed -i "s#/dev/sdxxx#$DRBD_DEVICE#g" /etc/drbd.d/r0.res
+  sed -i "s#%DRBD_DEVICE%#$DRBD_DEVICE#g" /etc/drbd.d/r0.res
 else
   echo "Make sure you set the DRBD_DEVICE environment variable, and set it to the correct block device. This device WILL be formatted when starting this container."
   exit
@@ -45,9 +45,9 @@ if [ ! -z "$SMTP_PASS" ]; then
 fi
 
 # Init disks if no drbd meta-data is found
-if [ "$(drbdsetup /dev/drbd1 dstate &>/dev/null || echo $?)" == "10" ]; then
+if drbdadm dstate all 2>&1 | grep -q 'No valid meta data found'; then
   if [ "$hostname" == "cluster-data-1" ]; then
-    drbdadm dstate all | grep -v UpToDate && drbdadm create-md all && drbdadm up all && drbdadm primary --force all && mkfs.ext4 /dev/drbd1
+    drbdadm create-md all && drbdadm up all && drbdadm primary --force all && mkfs.ext4 /dev/drbd1
   else
     drbdadm create-md all
   fi

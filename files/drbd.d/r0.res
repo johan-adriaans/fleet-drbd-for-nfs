@@ -1,7 +1,7 @@
 resource r0 {
   protocol C;
   device    /dev/drbd1;
-  disk      /dev/sdxxx;
+  disk      %DRBD_DEVICE%;
   meta-disk internal;
 
   handlers {
