@@ -1,12 +1,13 @@
 FROM johanadriaans/docker-base-alpine:3.4
 MAINTAINER Johan Adriaans <johan@shoppagina.nl>
 
-RUN apk add --update ssmtp mailx drbd-utils perl e2fsprogs
+RUN apk add --update ssmtp curl mailx drbd-utils perl e2fsprogs
 
 COPY files/drbd.d /etc/drbd.d
 COPY service /etc/service
 COPY files/ssmtp.conf /etc/ssmtp/ssmtp.conf
 COPY files/aliases /etc/aliases
+COPY files/monitor-connectivity.sh /usr/bin/monitor-connectivity.sh
 
 ENV DRBD_DEVICE=/dev/sdxxx
 ENV EMAIL_ROOT_ACCOUNT=info@dummy-domain.xyz

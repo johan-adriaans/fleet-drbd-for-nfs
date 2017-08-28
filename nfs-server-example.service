@@ -31,7 +31,7 @@ ExecStartPre=/bin/sh -c "echo '/opt/drbd1 10.0.0.5/24(rw,async,no_subtree_check,
 ExecStart=/usr/bin/systemctl start rpc-mountd
 
 # Stop NFS, unmount, make secondary and remove IP
-ExecStop=/usr/bin/systemctl stop rpc-mountd
+ExecStopPost=/usr/bin/systemctl stop rpc-mountd
 ExecStopPost=/usr/bin/umount /opt/drbd1
 ExecStopPost=/usr/bin/docker exec drbd drbdadm secondary all
 ExecStopPost=/usr/bin/ip addr del 10.0.0.5/24 dev eth1
