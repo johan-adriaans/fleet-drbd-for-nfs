@@ -10,6 +10,7 @@ echo "Starting cluster connectivity monitor, maximum failures set to $MAX_FAILUR
 COUNT=0
 while true; do
   OUTPUT="$(curl --silent --connect-timeout 2 "$ETCD_URL")"
+  echo $OUTPUT
   if [ $? ] && [[ $OUTPUT == '{"action":"get",'* ]] ; then
     if [ $COUNT -ne 0 ]; then
       echo "Successfull connect after $COUNT failures, resetting counter"
